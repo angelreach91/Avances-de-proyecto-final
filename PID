@@ -1,0 +1,50 @@
+// Un avance de lo que será nuestra lógica PID que usaremos para mover nuestro robot seguidor de linea
+// PID
+float Kp = 0.05;
+float Ki = 0.0001;
+float Kd = 0.2;
+
+int error = 0;
+int errorAnterior = 0;
+int integral = 0;
+
+// Motores
+const int PWMA = 5;
+const int AIN1 = 2;
+const int AIN2 = 3;
+
+const int PWMB = 6;
+const int BIN1 = 7;
+const int BIN2 = 8;
+
+const int STBY = 9;
+
+void setup() {
+  Serial.begin(9600);
+
+  // Pines de motor
+  pinMode(PWMA, OUTPUT);
+  pinMode(AIN1, OUTPUT);
+  pinMode(AIN2, OUTPUT);
+  pinMode(PWMB, OUTPUT);
+  pinMode(BIN1, OUTPUT);
+  pinMode(BIN2, OUTPUT);
+  pinMode(STBY, OUTPUT);
+  
+  digitalWrite(STBY, HIGH); // Activar driver
+}
+
+void loop() {
+  int posicion = calcularPosicion(); // 0 a 5000
+  if (posicion == -1) {
+    detener();
+    return;
+  }
+
+  error = 2500 - posicion;
+  integral += error;
+  int derivada = error - errorAnterior;
+
+  int salida = Kp * error + Ki * integral + Kd * derivada;
+
+  errorAnterior = error;
